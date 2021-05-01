@@ -4,13 +4,11 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.PopupMenu;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -37,12 +35,14 @@ public class MainActivity extends Activity implements MoviesRecyclerAdapter.OnMo
     private ArrayList<SingleMovieDetails> moviesArrayList;
     private ArrayList<SingleMovieDetails> favoritesList;
     private ArrayList<SingleMovieDetails> nowPlaying;
+    private ArrayList<SingleMovieDetails> currentArrayList;
     MoviesRecyclerAdapter moviesRecyclerAdapter;
 
     private String generalUrl = "https://api.themoviedb.org/3/";
     private String genre[] = {"movie/popular", "movie/now_playing", "myFavorites"};
     private String API_KEY = "?api_key=2c46288716a18fb7aadcc2a801f3fc6b";
     private int pos = -1;
+    private boolean isFirstLaunch = true;
 
 
     @Override
@@ -55,6 +55,7 @@ public class MainActivity extends Activity implements MoviesRecyclerAdapter.OnMo
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         moviesRecyclerAdapter = new MoviesRecyclerAdapter(moviesArrayList, this,this);
+        currentArrayList = moviesArrayList;
         recyclerView.setAdapter(moviesRecyclerAdapter);
     }
 
@@ -63,10 +64,10 @@ public class MainActivity extends Activity implements MoviesRecyclerAdapter.OnMo
             while (currentPage < totalPages) {
                 currentPage++;
                 String url = "";
-                if (kind.equals("movie/popular")) {
+                if (kind.equals(genre[0])) {
                      url = generalUrl + kind + API_KEY + "&page=" + currentPage;
                 } else{
-                     url = "https://api.themoviedb.org/3/movie/now_playing?api_key=2c46288716a18fb7aadcc2a801f3fc6b";
+                     url = "https://api.themoviedb.org/3/" + kind + API_KEY + "&page=" + currentPage;
                 }
                 final Request request = new Request.Builder()
                         .url(url)
@@ -87,19 +88,28 @@ public class MainActivity extends Activity implements MoviesRecyclerAdapter.OnMo
                             try {
                                 jsonObject = new JSONObject(res);
                                 totalPages = (int) jsonObject.get("total_pages");
+                                Log.d("TOTAL_PAGES", String.valueOf(totalPages));
                                 JSONArray resultsObject = (JSONArray) jsonObject.getJSONArray("results");
+                                Log.d("RESPONSE", resultsObject.toString());
                                 for (int i = 0; i < resultsObject.length(); i++) {
                                     JSONObject object = resultsObject.getJSONObject(i);
                                     String id = object.getString("id");
                                     String title = object.getString("title");
                                     String releaseDate = object.getString("release_date");
                                     String imageUrl = object.getString("poster_path");
-                                    if (kind.equals("movie/now_playing")){
+                                    if (!kind.equals(genre[0])){
                                         nowPlaying.add(new SingleMovieDetails(id, title, releaseDate, imageUrl));
-                                        Log.d("RESPONSE", "id: [" + i + "]=" + id + ":  " + title + ":  " + releaseDate + ":  " + imageUrl);
-
                                     }else
                                         moviesArrayList.add(new SingleMovieDetails(id, title, releaseDate, imageUrl));
+                                }
+                                if (isFirstLaunch){
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            recyclerView.setAdapter(moviesRecyclerAdapter);
+                                            isFirstLaunch = false;
+                                        }
+                                    });
                                 }
                             } catch (JSONException e) {
                                 e.printStackTrace();
@@ -110,13 +120,15 @@ public class MainActivity extends Activity implements MoviesRecyclerAdapter.OnMo
 
                 });
             }
+            currentPage = 1;
         }
     @Override
     public void OnMovieClicked(int position, View itemView) {
         pos = position;
         Intent intent = new Intent(this, DetailedMovieActivity.class);
-        intent.putExtra("movieId", moviesArrayList.get(position).movieId);
+        intent.putExtra("movieId", currentArrayList.get(position).movieId);
         intent.putExtra("position", position);
+        intent.putExtra("isFavorite", currentArrayList.get(position).isFavorite);
         startActivity(intent);
     }
 
@@ -124,8 +136,8 @@ public class MainActivity extends Activity implements MoviesRecyclerAdapter.OnMo
     protected void onResume() {
         super.onResume();
         if (pos != -1) {
-            if (moviesArrayList.get(pos).isFavorite != MovieProperties.isFavorite) {
-                moviesArrayList.get(pos).isFavorite = MovieProperties.isFavorite;
+            if (currentArrayList.get(pos).isFavorite != MovieProperties.isFavorite) {
+                currentArrayList.get(pos).isFavorite = MovieProperties.isFavorite;
                 moviesRecyclerAdapter.notifyItemChanged(pos);
             }
         }
@@ -147,7 +159,8 @@ public class MainActivity extends Activity implements MoviesRecyclerAdapter.OnMo
                                     favoritesList.add(moviesArrayList.get(i));
                                 }
                             }
-                            moviesRecyclerAdapter = new MoviesRecyclerAdapter(favoritesList, MainActivity.this, MainActivity.this);
+                            currentArrayList = favoritesList;
+                            moviesRecyclerAdapter = new MoviesRecyclerAdapter(currentArrayList, MainActivity.this, MainActivity.this);
                             recyclerView.setAdapter(moviesRecyclerAdapter);
                         }
                     }
@@ -155,15 +168,14 @@ public class MainActivity extends Activity implements MoviesRecyclerAdapter.OnMo
                         headline.setText("Now playing");
                         nowPlaying = new ArrayList<>();
                         getMoviesFromDb(genre[1]);
-                        moviesRecyclerAdapter = new MoviesRecyclerAdapter(nowPlaying, MainActivity.this, MainActivity.this);
+                        currentArrayList = nowPlaying;
+                        moviesRecyclerAdapter = new MoviesRecyclerAdapter(currentArrayList, MainActivity.this, MainActivity.this);
                         recyclerView.setAdapter(moviesRecyclerAdapter);
-
-
                     }
                     else if (item.getTitle().equals("Popular")) {
                         headline.setText("Popular");
-
-                        moviesRecyclerAdapter = new MoviesRecyclerAdapter(moviesArrayList,
+                        currentArrayList = moviesArrayList;
+                        moviesRecyclerAdapter = new MoviesRecyclerAdapter(currentArrayList,
                                 MainActivity.this, MainActivity.this);
                         recyclerView.setAdapter(moviesRecyclerAdapter);
                     }

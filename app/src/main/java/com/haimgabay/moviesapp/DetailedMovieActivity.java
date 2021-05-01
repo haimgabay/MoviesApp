@@ -1,26 +1,18 @@
 package com.haimgabay.moviesapp;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import com.squareup.okhttp.Callback;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 import com.squareup.picasso.Picasso;
-
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -54,6 +46,10 @@ public class DetailedMovieActivity extends Activity {
         releaseDate = findViewById(R.id.movieTitle);
         favoriteOrNot = findViewById(R.id.favoriteImage);
         position = getIntent().getIntExtra("position", 0);
+        isFavorite = getIntent().getBooleanExtra("isFavorite", false);
+        if (isFavorite){
+            favoriteOrNot.setImageResource(R.drawable.favorite_image);
+        }
         getSingleMovie();
     }
 
@@ -80,9 +76,7 @@ public class DetailedMovieActivity extends Activity {
                                 final String movieTitle = jsonObject.get("title").toString();
                                 final String movieDetails = jsonObject.get("overview").toString();
                                 final String imageUrl = jsonObject.get("poster_path").toString();
-                                Log.d("RESPONSE", "responseObj: \n" + jsonObject.toString());
-                                Log.d("RESPONSE", "movie name: \n" + jsonObject.get("title").toString());
-                                Log.d("RESPONSE", "overView: \n" + jsonObject.get("overview").toString());
+
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {

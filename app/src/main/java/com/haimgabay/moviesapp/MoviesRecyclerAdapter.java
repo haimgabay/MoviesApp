@@ -71,7 +71,6 @@ public class MoviesRecyclerAdapter extends RecyclerView.Adapter<MoviesRecyclerAd
             itemView.setOnClickListener(this);
         }
 
-
         @Override
         public void onClick(View view) {
             mOnMovieClickedListener.OnMovieClicked(getBindingAdapterPosition(), itemView);
@@ -82,9 +81,8 @@ public class MoviesRecyclerAdapter extends RecyclerView.Adapter<MoviesRecyclerAd
         void OnMovieClicked(int position, View itemView);
     }
 
-
     public void downloadImageFromDb(String imageUrl, final ImageView imageView) {
                 String path = "https://image.tmdb.org/t/p/w500/" + imageUrl;
                 Picasso.with(context).load(path).into(imageView);
-            }
+    }
 }
