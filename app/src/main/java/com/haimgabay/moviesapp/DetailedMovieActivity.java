@@ -42,8 +42,8 @@ public class DetailedMovieActivity extends Activity {
         id = getIntent().getStringExtra("movieId");
         PATH = "https://api.themoviedb.org/3/movie/" + id + API_KEY;
         title = findViewById(R.id.title);
-        details = findViewById(R.id.releaseDate);
-        releaseDate = findViewById(R.id.movieTitle);
+        details = findViewById(R.id.movieDetails);
+        releaseDate = findViewById(R.id.releaseDate);
         favoriteOrNot = findViewById(R.id.favoriteImage);
         position = getIntent().getIntExtra("position", 0);
         isFavorite = getIntent().getBooleanExtra("isFavorite", false);
@@ -74,6 +74,7 @@ public class DetailedMovieActivity extends Activity {
                             try {
                                 jsonObject = new JSONObject(res);
                                 final String movieTitle = jsonObject.get("title").toString();
+                                final String movieReleaseDate = jsonObject.get("release_date").toString();
                                 final String movieDetails = jsonObject.get("overview").toString();
                                 final String imageUrl = jsonObject.get("poster_path").toString();
 
@@ -81,8 +82,11 @@ public class DetailedMovieActivity extends Activity {
                                     @Override
                                     public void run() {
                                         title.setText(movieTitle);
-                                        title.setText(movieDetails);
-                                        Picasso.with(DetailedMovieActivity.this).load(IMAGE_PATH + imageUrl).into(imageView);
+                                        details.setText(movieDetails);
+                                        releaseDate.setText(movieReleaseDate);
+                                        Picasso.with(DetailedMovieActivity.this).load(
+                                                IMAGE_PATH + imageUrl).fit()
+                                                    .into(imageView);
                                     }
                                 });
                             } catch (JSONException e) {

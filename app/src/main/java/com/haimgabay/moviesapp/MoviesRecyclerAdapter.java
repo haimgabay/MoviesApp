@@ -10,6 +10,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.LiveData;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.squareup.picasso.Picasso;
@@ -18,12 +19,13 @@ import java.util.ArrayList;
 
 public class MoviesRecyclerAdapter extends RecyclerView.Adapter<MoviesRecyclerAdapter.ViewHolder> {
 
-    ArrayList<SingleMovieDetails> moviesArrayList;
     Context context;
+    ArrayList<SingleMovieDetails> moviesArrayList;
     OnMovieClickedListener mOnMovieClickedListener;
 
 
-    public MoviesRecyclerAdapter(ArrayList<SingleMovieDetails> moviesArrayList, Context context, OnMovieClickedListener onMovieClickedListener){
+    public MoviesRecyclerAdapter(ArrayList<SingleMovieDetails> moviesArrayList, Context context,
+                                 OnMovieClickedListener onMovieClickedListener){
         this.moviesArrayList = moviesArrayList;
         this.context = context;
         this.mOnMovieClickedListener = onMovieClickedListener;
@@ -73,7 +75,9 @@ public class MoviesRecyclerAdapter extends RecyclerView.Adapter<MoviesRecyclerAd
 
         @Override
         public void onClick(View view) {
-            mOnMovieClickedListener.OnMovieClicked(getBindingAdapterPosition(), itemView);
+            if (mOnMovieClickedListener != null) {
+                mOnMovieClickedListener.OnMovieClicked(getBindingAdapterPosition(), itemView);
+            }
         }
     }
 

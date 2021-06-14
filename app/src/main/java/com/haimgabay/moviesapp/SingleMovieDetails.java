@@ -2,6 +2,17 @@ package com.haimgabay.moviesapp;
 
 public class SingleMovieDetails {
 
+    @Override
+    public String toString() {
+        return "SingleMovieDetails{" +
+                "movieId='" + movieId + '\'' +
+                ", title='" + title + '\'' +
+                ", releaseDate='" + releaseDate + '\'' +
+                ", movieImageUrl='" + movieImageUrl + '\'' +
+                ", isFavorite=" + isFavorite +
+                '}';
+    }
+
     String movieId;
     String title;
     String releaseDate;
